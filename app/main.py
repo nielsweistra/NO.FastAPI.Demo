@@ -101,8 +101,8 @@ async def get_weather(request: WeatherRequest):
 # New API endpoint to create and return a temperature graph
 @router.get("/weather/graph", tags=["weather"])
 async def get_weather_graph(
-    latitude: float = Query(...),
-    longitude: float = Query(...),
+    latitude: float = Query("52.377956"),
+    longitude: float = Query("4.897070"),
     timezone: str = Query("Europe/Berlin")
 ):
     # Get the weather data
