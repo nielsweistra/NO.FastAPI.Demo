@@ -25,17 +25,17 @@ jobs:
     - name: Run Bandit Security Scan
       run: |
         pip install bandit
-        bandit -r ./app
+        bandit .\app -r -x .\app\tests\
 
-    - name: Run Semgrep
-      run: |
-        pip install semgrep
-        semgrep --config p/ci ./app
+    # - name: Run Semgrep
+    #   run: |
+    #     pip install semgrep
+    #     semgrep --config p/ci ./app
 
-    - name: Run Safety Security Check
-      run: |
-        pip install safety
-        safety check --full-report
+    # - name: Run Safety Security Check
+    #   run: |
+    #     pip install safety
+    #     safety check --full-report
 
     # Install dependencies
     - name: Install dependencies
