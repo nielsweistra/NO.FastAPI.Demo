@@ -25,7 +25,7 @@ jobs:
     - name: Run Bandit Security Scan
       run: |
         pip install bandit
-        bandit .\app -r -x .\app\tests\
+        bandit ./app -r -x ./app/tests/
 
     # - name: Run Semgrep
     #   run: |
