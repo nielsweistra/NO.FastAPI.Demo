@@ -32,17 +32,17 @@ jobs:
     # Lint with Flake8
     - name: Lint with flake8
       run: |
-        flake8 .\app  # Lints the code in the current directory
+        flake8 ./app  # Lints the code in the current directory
 
     # Run tests with pytest
     - name: Test with pytest
       run: |
-        pytest .\app # Runs all the tests in the project
+        pytest ./app # Runs all the tests in the project
 
     # Format code with Black (optional)
     - name: Check code formatting with Black
       run: |
-        black --check .\app  # Checks if the code is formatted according to Black
+        black --check ./app  # Checks if the code is formatted according to Black
 
     # Build the Docker image (only runs if the previous steps pass)
     - name: Build the Docker image
