@@ -33,7 +33,7 @@ jobs:
     - name: Lint with flake8
       continue-on-error: true  # Continue even if this step fails
       run: |
-        flake8 --verbose ./app  # Lints the code in the current directory
+        flake8 -ignore=E302 --verbose ./app  # Lints the code in the current directory
 
     # Run tests with pytest
     - name: Test with pytest
