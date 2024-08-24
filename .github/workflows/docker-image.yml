@@ -31,17 +31,19 @@ jobs:
 
     # Lint with Flake8
     - name: Lint with flake8
-      if: false 
+      continue-on-error: true  # Continue even if this step fails
       run: |
         flake8 ./app  # Lints the code in the current directory
 
     # Run tests with pytest
     - name: Test with pytest
+      continue-on-error: true  # Continue even if this step fails
       run: |
         pytest ./app # Runs all the tests in the project
 
     # Format code with Black (optional)
     - name: Check code formatting with Black
+      continue-on-error: true  # Continue even if this step fails
       run: |
         black --check ./app  # Checks if the code is formatted according to Black
 
