@@ -22,6 +22,21 @@ jobs:
       with:
         python-version: '3.x'  # Specify the Python version (e.g., 3.8, 3.9, etc.)
 
+    - name: Run Bandit Security Scan
+      run: |
+        pip install bandit
+        bandit -r ./app
+
+    - name: Run Semgrep
+      run: |
+        pip install semgrep
+        semgrep --config p/ci ./app
+
+    - name: Run Safety Security Check
+      run: |
+        pip install safety
+        safety check --full-report
+
     # Install dependencies
     - name: Install dependencies
       run: |
