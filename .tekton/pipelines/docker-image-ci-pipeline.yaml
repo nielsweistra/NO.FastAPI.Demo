@@ -1,0 +1,66 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: docker-image-ci-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+  tasks:
+    - name: checkout
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: "$(params.repo-url)"
+        - name: revision
+          value: "$(params.revision)"
+
+    - name: setup-python
+      taskRef:
+        name: setup-python
+      runAfter: 
+        - checkout
+      params:
+        - name: python-version
+          value: "3.x"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: run-bandit-security-scan
+      taskRef:
+        name: run-bandit-security-scan
+      runAfter:
+        - setup-python
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: lint-with-flake8
+      taskRef:
+        name: lint-with-flake8
+      runAfter:
+        - run-bandit-security-scan
+      params:
+        - name: flake8-args
+          value: "--ignore=E302 --verbose ./app"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: build-docker-image
+      taskRef:
+        name: build-docker-image
+      runAfter:
+        - lint-with-flake8
+      params:
+        - name: dockerfile
+          value: "Dockerfile"
+        - name: image-name
+          value: "my-image"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
