@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: docker-image-ci-pipeline
+  name: {{ .Values.pipeline.name | default "docker-image-ci-pipeline" }}
 spec:
   workspaces:
     - name: shared-workspace
@@ -14,9 +14,9 @@ spec:
           workspace: shared-workspace
       params:
         - name: url
-          value: "$(params.repo-url)"
+          value: {{ .Values.pipeline.params.repoUrl | quote }}
         - name: revision
-          value: "$(params.revision)"
+          value: {{ .Values.pipeline.params.revision | default "main" | quote }}
 
     - name: setup-python
       taskRef:
@@ -25,7 +25,7 @@ spec:
         - checkout
       params:
         - name: python-version
-          value: "3.x"
+          value: {{ .Values.pipeline.params.pythonVersion | default "3.x" | quote }}
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -46,7 +46,7 @@ spec:
         - run-bandit-security-scan
       params:
         - name: flake8-args
-          value: "--ignore=E302 --verbose ./app"
+          value: {{ .Values.pipeline.params.flake8Args | default "--ignore=E302 --verbose ./app" | quote }}
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -58,9 +58,9 @@ spec:
         - lint-with-flake8
       params:
         - name: dockerfile
-          value: "Dockerfile"
+          value: {{ .Values.pipeline.params.dockerfile | default "Dockerfile" | quote }}
         - name: image-name
-          value: "my-image"
+          value: {{ .Values.pipeline.params.imageName | default "my-image" | quote }}
       workspaces:
         - name: source
           workspace: shared-workspace

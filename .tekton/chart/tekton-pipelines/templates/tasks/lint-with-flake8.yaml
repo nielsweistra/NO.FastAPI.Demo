@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: {{ .Values.tasks.lintWithFlake8.name | default "lint-with-flake8" }}
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: flake8-args
+      type: string
+      description: "Arguments to pass to Flake8"
+      default: {{ .Values.tasks.lintWithFlake8.params.flake8Args | default "--ignore=E302 --verbose ./app" | quote }}
+  steps:
+    - name: install-flake8
+      image: {{ .Values.tasks.lintWithFlake8.steps.installFlake8.image | default "python:3.9-slim" | quote }}
+      script: |
+        pip install flake8
+    - name: run-flake8
+      image: {{ .Values.tasks.lintWithFlake8.steps.runFlake8.image | default "python:3.9-slim" | quote }}
+      script: |
+        flake8 $(params['flake8-args'])

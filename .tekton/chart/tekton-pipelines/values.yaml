@@ -1,0 +1,29 @@
+pipeline:
+  name: "docker-image-ci-pipeline"
+  params:
+    repoUrl: "https://your-repo-url.git"
+    revision: "main"
+    pythonVersion: "3.8"
+    flake8Args: "--ignore=E302 --verbose ./app"
+    dockerfile: "Dockerfile"
+    imageName: "my-image"
+
+tasks:
+  buildDockerImage:
+    name: "build-docker-image"
+    params:
+      dockerfile: "Dockerfile"
+      imageName: "my-image"
+    steps:
+      buildImage:
+        image: "docker:20.10"
+
+  lintWithFlake8:
+    name: "lint-with-flake8"
+    params:
+      flake8Args: "--ignore=E302 --verbose ./app"
+    steps:
+      installFlake8:
+        image: "python:3.9-slim"
+      runFlake8:
+        image: "python:3.9-slim"
