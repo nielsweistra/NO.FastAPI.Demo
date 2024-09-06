@@ -103,19 +103,33 @@ fi
 # Create the new version
 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
-# If the latest tag contains a suffix, preserve it for the new tag
+# Check if the latest tag contains a suffix
 SUFFIX=$(echo "$LATEST_TAG" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+(-.*)?/\1/')
+
+# If no suffix is found, use the branch name as suffix
+if [ -z "$SUFFIX" ]; then
+    BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+    SUFFIX="-${BRANCH_NAME}"
+fi
+
+# Create the new tag with the version and suffix
 NEW_TAG="v$NEW_VERSION$SUFFIX"
 
 # Update Chart.yaml with the new version
 sed -i "s/^version: .*/version: $NEW_VERSION/" Chart.yaml
+
+# Build and tag Docker image with new version
+# Assuming Dockerfile is in the root directory
+DOCKER_REPO="<your-acr-name>.azurecr.io/my-app"
+docker build -t "$DOCKER_REPO:$NEW_VERSION" .
+docker push "$DOCKER_REPO:$NEW_VERSION"
 
 # Create a new Git tag for the version
 git tag -a "$NEW_TAG" -m "Release version $NEW_TAG"
 git push origin "$NEW_TAG"
 
 echo "Updated to version $NEW_TAG. Added tag to GIT"
-echo "Next step is to build the container with tag "latest", a tag with the new version. Package and push the helm package to a repo.
+echo "Next step is to build the container with tag 'latest', a tag with the new version. Package and push the helm package to a repo."
 
 ```
 <br>
