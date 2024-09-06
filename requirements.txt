@@ -1,0 +1,10 @@
+fastapi[standard]
+openmeteo_requests
+requests_cache
+retry_requests
+pandas
+matplotlib
+BeautifulSoup4
+pydantic_settings
+pydantic
+pathlib

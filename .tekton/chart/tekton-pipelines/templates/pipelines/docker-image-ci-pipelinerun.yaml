@@ -1,0 +1,16 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: docker-image-ci-pipelinerun
+spec:
+  pipelineRef:
+    name: docker-image-ci-pipeline
+  workspaces:
+    - name: shared-workspace
+      persistentVolumeClaim:
+        claimName: my-pvc
+  params:
+    - name: repo-url
+      value: "https://github.com/your/repo.git"
+    - name: revision
+      value: "main"

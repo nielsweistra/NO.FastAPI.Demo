@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: {{ .Values.tasks.buildDockerImage.name | default "build-docker-image" }}
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: dockerfile
+      type: string
+      description: "Path to the Dockerfile"
+      default: {{ .Values.tasks.buildDockerImage.params.dockerfile | default "Dockerfile" | quote }}
+    - name: image-name
+      type: string
+      description: "Name of the Docker image"
+      default: {{ .Values.tasks.buildDockerImage.params.imageName | default "my-image" | quote }}
+  steps:
+    - name: build-image
+      image: {{ .Values.tasks.buildDockerImage.steps.buildImage.image | default "docker:20.10" | quote }}
+      script: |
+        docker build -f $(params['dockerfile']) -t $(params['image-name']):$(date +%s) .

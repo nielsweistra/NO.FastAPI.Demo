@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: setup-python
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: python-version
+      type: string
+      description: The version of Python to install
+      default: "3.x"
+  steps:
+    - name: install-python
+      image: python:3.9-slim
+      script: |
+        apt-get update && apt-get install -y python3-pip
+        echo "Python version:"
+        python3 --version
+        pip3 install --upgrade pip
+    - name: validate-install
+      image: python:3.9-slim
+      script: |
+        echo "Validating Python installation"
+        python3 --version
+        pip3 --version

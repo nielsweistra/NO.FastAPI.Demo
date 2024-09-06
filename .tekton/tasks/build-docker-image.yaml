@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-docker-image
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: dockerfile
+      type: string
+      description: "Path to the Dockerfile"
+      default: "Dockerfile"
+    - name: image-name
+      type: string
+      description: "Name of the Docker image"
+      default: "my-image"
+  steps:
+    - name: build-image
+      image: docker:20.10
+      script: |
+        docker build -f $(params.dockerfile) -t $(params.image-name):$(date +%s) .

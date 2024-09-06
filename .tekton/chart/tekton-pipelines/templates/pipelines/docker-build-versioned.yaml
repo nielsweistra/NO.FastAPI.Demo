@@ -1,0 +1,136 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-tag-pipeline
+spec:
+  params:
+    - name: repo-url
+      description: "The URL of the Git repository"
+      type: string
+    - name: branch
+      description: "The branch name to checkout (e.g., 'develop' or 'main')"
+      type: string
+    - name: base-version
+      description: "Base version for the tags (e.g., '1.0')"
+      type: string
+    - name: create-release-branch
+      description: "Flag to create a release branch (true/false)"
+      type: string
+      default: "false"
+    - name: enable-tagging
+      description: "Flag to enable tagging (true/false)"
+      type: string
+      default: "true"
+    - name: image-name
+      description: "Name of the Docker image to build"
+      type: string
+    - name: dockerfile
+      description: "Path to the Dockerfile"
+      type: string
+    - name: context
+      description: "Build context for Docker"
+      type: string
+      default: "."
+
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: "$(params.repo-url)"
+        - name: revision
+          value: "$(params.branch)"
+    
+    - name: get-latest-tag
+      taskRef:
+        name: script
+      runAfter:
+        - clone-repo
+      params:
+        - name: script
+          value: |
+            #!/bin/bash
+            git fetch --tags
+            latest_tag=$(git tag -l | grep "$(params.base-version)" | grep "$(params.branch)" | sort -V | tail -n 1)
+            if [[ -z "$latest_tag" ]]; then
+              echo "LATEST_TAG=none" >> $(results.path)
+            else
+              echo "LATEST_TAG=$latest_tag" >> $(results.path)
+            fi
+    
+    - name: calculate-new-tag
+      taskRef:
+        name: script
+      runAfter:
+        - get-latest-tag
+      params:
+        - name: script
+          value: |
+            #!/bin/bash
+            latest_tag=$(cat $(results.path)/LATEST_TAG)
+            base_version=$(params.base-version)
+            branch=$(params.branch)
+
+            if [[ "$latest_tag" == "none" ]]; then
+              new_tag="${base_version}.1-${branch}"
+            else
+              version_part=$(echo $latest_tag | sed -E "s/^${base_version}\.([0-9]+)-.*/\1/")
+              new_version=$((version_part + 1))
+              new_tag="${base_version}.${new_version}-${branch}"
+            fi
+
+            echo "NEW_TAG=$new_tag" >> $(results.path)
+
+    - name: create-release-branch
+      taskRef:
+        name: script
+      when:
+        - input: "$(params.create-release-branch)"
+          operator: in
+          values: ["true"]
+      runAfter:
+        - calculate-new-tag
+      params:
+        - name: script
+          value: |
+            #!/bin/bash
+            new_tag=$(cat $(results.path)/NEW_TAG)
+            release_branch="release-${new_tag}"
+            git checkout -b $release_branch
+            git push origin $release_branch
+    
+    - name: tag-and-push
+      taskRef:
+        name: script
+      when:
+        - input: "$(params.enable-tagging)"
+          operator: in
+          values: ["true"]
+      runAfter:
+        - calculate-new-tag
+        - create-release-branch
+      params:
+        - name: script
+          value: |
+            #!/bin/bash
+            new_tag=$(cat $(results.path)/NEW_TAG)
+            git tag $new_tag
+            git push origin $new_tag
+
+    - name: build-and-push-image
+      taskRef:
+        name: build-and-push-docker
+      runAfter:
+        - tag-and-push
+      params:
+        - name: image
+          value: "$(params.image-name):$(cat $(results.path)/NEW_TAG)"
+        - name: dockerfile
+          value: "$(params.dockerfile)"
+        - name: context
+          value: "$(params.context)"
+
+  results:
+    - name: tag
+      description: "The new tag created"

@@ -1,0 +1,11 @@
+# config.yaml
+host: "127.0.0.1"
+port: 8000
+debug: true
+database_url: "sqlite:///./test.db"
+capture_fastapi_logs: true
+
+# Extra fields
+custom_option: "Extra Value"
+feature_flag: true
+timeout_limit: 300

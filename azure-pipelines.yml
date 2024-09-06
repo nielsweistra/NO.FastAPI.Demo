@@ -1,0 +1,112 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feature/* # Include other branches as needed
+
+variables:
+  - group: itlk8sglobalsecrets
+  - name: ACR_NAME
+    value: 'itlk8sacr01' # Replace with your Azure Container Registry name
+  - name: IMAGE_NAME
+    value: 'ITL-FastApi-Demo'   # Replace with your desired image name
+  - name: AZURE_SERVICE_CONNECTION
+    value: 'itlk8sacrsc01' # Replace with your Azure service connection name
+
+stages:
+- stage: Build
+  displayName: Build and Publish Docker Image
+  jobs:
+  - job: BuildAndPush
+    displayName: Build and Push Docker Image
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+      persistCredentials: true
+
+    - script: |
+        git fetch --tags
+        latest_tag=$(git describe --tags `git rev-list --tags --max-count=1` 2>/dev/null)
+
+        # Default to 1.0.0 if no tag is found
+        if [ -z "$latest_tag" ]; then
+          new_tag="1.0.0"
+        else
+          # Extract major, minor, and patch from latest tag
+          IFS='.' read -r major minor patch <<< "$latest_tag"
+
+          # Ensure all components are numbers and follow the pattern X.Y.Z
+          if [[ "$major" =~ ^[0-9]+$ && "$minor" =~ ^[0-9]+$ && "$patch" =~ ^[0-9]+$ ]]; then
+            patch=$((patch + 1)) # Increment the patch number
+            new_tag="$major.$minor.$patch"
+          else
+            # Handle non-standard tag formats
+            new_tag="1.0.0"
+          fi
+        fi
+
+        echo "##vso[task.setvariable variable=NEW_VERSION_TAG;isOutput=true]$new_tag"
+        echo "New version tag: $new_tag"
+
+        # Configure Git with the PAT
+        git config user.name "Azure DevOps Pipeline"
+        git config user.email "build@azuredevops.com"
+        git config push.default current
+
+        # Create and push the new tag
+        git tag -a $new_tag -m "$(Build.SourceBranchName) Release"
+        git push origin --tags
+      displayName: 'Get Latest Git Tag, Calculate New Version, and Push Tag'
+      name: GetTag
+
+    - script: |
+        if [[ "$(Build.SourceBranchName)" == "main" || "$(Build.SourceBranchName)" == "master" ]]; then
+          tag_name=""
+        else
+          tag_name="-$(Build.SourceBranchName)"
+        fi
+        echo "##vso[task.setvariable variable=TAG_SUFFIX_NAME;isOutput=true]$tag_name"
+      displayName: 'Determine Tag Suffix Name'
+      name: SetTagName
+    
+    - task: Docker@2
+      displayName: 'Login to ACR'
+      inputs:
+        command: login
+        containerRegistry: $(AZURE_SERVICE_CONNECTION)
+
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: build
+        Dockerfile: './Dockerfile'
+        tags: |
+          $(GetTag.NEW_VERSION_TAG).$(Build.BuildId)$(SetTagName.TAG_SUFFIX_NAME)
+          latest$(SetTagName.TAG_SUFFIX_NAME)
+        repository: $(ACR_NAME).azurecr.io/$(IMAGE_NAME)
+
+    - task: Docker@2
+      displayName: 'Push Docker Image'
+      inputs:
+        command: push
+        repository: $(ACR_NAME).azurecr.io/$(IMAGE_NAME)
+        tags: |
+          $(GetTag.NEW_VERSION_TAG).$(Build.BuildId)$(SetTagName.TAG_SUFFIX_NAME)
+          latest$(SetTagName.TAG_SUFFIX_NAME)
+
+    - task: HelmInstaller@1
+      displayName: 'Install Helm'
+      enabled: false
+      inputs:
+        helmVersion: 'latest'
+
+    - script: |
+        helm package helm/chart --destination $(Build.ArtifactStagingDirectory)
+      displayName: 'Package Helm Chart'
+      enabled: false
+
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: helm-chart
+      displayName: 'Publish Helm Chart Artifact'
+      enabled: false
