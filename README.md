@@ -1,8 +1,8 @@
 # FastAPI-Demo
 ## Une exploration à travers la technologie
 
-[![Docker Image CI](https://github.com/ITlusions/ITL.FastApi.Demo/actions/workflows/docker-image.yml/badge.svg)](https://github.com/ITlusions/ITL.FastApi.Demo/actions/workflows/docker-image.yml)
-
+[![Docker Image CI Github Actions](https://github.com/ITlusions/ITL.FastApi.Demo/actions/workflows/docker-image.yml/badge.svg)](https://github.com/ITlusions/ITL.FastApi.Demo/actions/workflows/docker-image.yml)
+[![Build Status - Azure Pipelines](https://dev.azure.com/ITlusions/ITL.FastAPI.Demo/_apis/build/status%2FITL.FastAPI.Demo.Build?branchName=main)](https://dev.azure.com/ITlusions/ITL.FastAPI.Demo/_build/latest?definitionId=35&branchName=main)
 ## Tech
 
 - Pipelines
