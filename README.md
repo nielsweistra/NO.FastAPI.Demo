@@ -56,9 +56,6 @@ This project is designed for a FastAPI application with integrated CI/CD pipelin
 - **`tutorial-findindfixingsqlinject.md`**: Documentation related to finding and fixing SQL injections.
 - **`versioning.md`**: Documentation detailing the versioning strategy and related scripts.
 
----
-
-This project is also hosted on [Azure Devops].
 
 ## Tech
 
@@ -75,8 +72,14 @@ This project is also hosted on [Azure Devops].
 
 > This is a demo, feel free to use and contribute!
 
+---
+<br>
+
+This project is also hosted on [Azure Devops]
+
 [Niels Weistra] @ [ITlusions]
 
    [ITlusions]: <https://github.com/ITlusions>
    [Niels Weistra]: <mailto:n.weistra@itlusions.com>
    [Azure Devops]: <https://dev.azure.com/ITlusions/ITL.FastAPI.Demo/>
+
