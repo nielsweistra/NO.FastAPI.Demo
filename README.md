@@ -1,6 +1,8 @@
 # FastAPI-Demo
+
 [![Docker Image CI Github Actions](https://github.com/ITlusions/ITL.FastApi.Demo/actions/workflows/docker-image.yml/badge.svg)](https://github.com/ITlusions/ITL.FastApi.Demo/actions/workflows/docker-image.yml)
 [![Build Status - Azure Pipelines](https://dev.azure.com/ITlusions/ITL.FastAPI.Demo/_apis/build/status%2FITL.FastAPI.Demo.Build?branchName=main)](https://dev.azure.com/ITlusions/ITL.FastAPI.Demo/_build/latest?definitionId=35&branchName=main)
+<br>
 
  - [Project structure](#project-structure-overview)
 
@@ -55,8 +57,6 @@ This project is designed for a FastAPI application with integrated CI/CD pipelin
 - **`versioning.md`**: Documentation detailing the versioning strategy and related scripts.
 
 ---
-
-This structure supports a development and deployment workflow, integrating CI/CD pipelines, Docker, Helm, and Tekton. Each component is managed from a single repo to facilitate easy updates and maintenance, and to ensure a consistent deployment process.
 
 This project is also hosted on [Azure Devops].
 
